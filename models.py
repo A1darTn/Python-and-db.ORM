@@ -1,5 +1,5 @@
 import sqlalchemy
-from sqlalchemy import ForeignKey, Column, String, Integer, Date
+from sqlalchemy import ForeignKey, Column, String, Integer, Date, DECIMAL
 from sqlalchemy.orm import DeclarativeBase
 
 
@@ -23,7 +23,7 @@ class Book(Base):
 
     id = Column("id", Integer, primary_key=True)
     title = Column("title", String(length=40), nullable=False)
-    id_publisher = Column("id_publisher", Integer, ForeignKey("publisher.id"), nullable=False)
+    id_publisher = Column("id_publisher", Integer, ForeignKey("publisher.id"))
 
     def __init__(self, id, title, id_publisher):
         self.id = id
@@ -61,15 +61,15 @@ class Sale(Base):
     __tablename__ = "sale"
 
     id = Column("id", Integer, primary_key=True)
-    price = Column("price", Integer, nullable=False)
+    price = Column("price", DECIMAL, nullable=False)
     date_sale = Column("date_sale", Date, nullable=False)
     id_stock = Column("id_stock", Integer, ForeignKey("stock.id"), nullable=False)
     count = Column("count", Integer, nullable=False)
 
-    def __init__(self, id, price, data_sale, id_stock, count):
+    def __init__(self, id, price, date_sale, id_stock, count):
         self.id = id
         self.price = price
-        self.date_sale = data_sale
+        self.date_sale = date_sale
         self.id_stock = id_stock
         self.count = count
 
