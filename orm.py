@@ -3,6 +3,29 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 from models import create_tables, Base, Publisher, Book, Shop, Stock, Sale
 
+def get_shop(publisher_identifier: str):
+    if publisher_identifier.isdigit():
+        publisher_id = int(publisher_identifier)
+        publisher = session.query(Publisher).filter_by(id = publisher_id).first()
+    else:
+        publisher_name = publisher_identifier
+        publisher = session.query(Publisher).filter_by(name = publisher_name).first()
+
+    if publisher:
+        results = session.query(
+            Book.title,
+            Shop.name,
+            Sale.price,
+            Sale.date_sale
+        ).join(Stock, Stock.id_book == Book.id) \
+        .join(Shop, Stock.id_shop == Shop.id)   \
+        .join(Sale, Sale.id_stock == Stock.id)  \
+        .filter(Book.id_publisher == publisher.id).all()
+        
+        for title, shop_name, price, date_sale in results:
+            print(f"{title: <40} | {shop_name: <10} | {price: <8} | {date_sale}")
+    else:
+        print('Издатель не найден')
 
 
 DSN = 'postgresql://postgres:aboba9752obama@localhost:5432/dbsqlalchemy'
@@ -50,30 +73,6 @@ session = Session()
 # session.add_all([sale_1, sale_2, sale_3, sale_4])
 # session.commit()
 
-
-def get_shop(publisher_identifier: str):
-    if publisher_identifier.isdigit():
-        publisher_id = int(publisher_identifier)
-        publisher = session.query(Publisher).filter_by(id = publisher_id).first()
-    else:
-        publisher_name = publisher_identifier
-        publisher = session.query(Publisher).filter_by(name = publisher_name).first()
-
-    if publisher:
-        results = session.query(
-            Book.title,
-            Shop.name,
-            Sale.price,
-            Sale.date_sale
-        ).join(Stock, Stock.id_book == Book.id) \
-        .join(Shop, Stock.id_shop == Shop.id)   \
-        .join(Sale, Sale.id_stock == Stock.id)  \
-        .filter(Book.id_publisher == publisher.id).all()
-        
-        for title, shop_name, price, date_sale in results:
-            print(f"{title: <40} | {shop_name: <10} | {price: <8} | {date_sale}")
-    else:
-        print('Издатель не найден')
         
 session.close()
 
