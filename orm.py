@@ -51,11 +51,32 @@ session = Session()
 # session.commit()
 
 
-name_publisher = input()
+def get_shop(publisher_identifier: str):
+    if publisher_identifier.isdigit():
+        publisher_id = int(publisher_identifier)
+        publisher = session.query(Publisher).filter_by(id = publisher_id).first()
+    else:
+        publisher_name = publisher_identifier
+        publisher = session.query(Publisher).filter_by(name = publisher_name).first()
 
-result = session.query(Book, Shop, Sale).filter(Publisher.name == name_publisher).filter(Publisher.id == Book.id_publisher).filter(Book.id == Stock.id_book).filter(Shop.id == Stock.id_shop).filter(Stock.id == Sale.id_stock)
-for i in result:
-    print(f'{i[0]} | {i[1]} | {i[2]}')
-else:
-    print(f'Список окончен или данные были введены непраивльно')
+    if publisher:
+        results = session.query(
+            Book.title,
+            Shop.name,
+            Sale.price,
+            Sale.date_sale
+        ).join(Stock, Stock.id_book == Book.id) \
+        .join(Shop, Stock.id_shop == Shop.id)   \
+        .join(Sale, Sale.id_stock == Stock.id)  \
+        .filter(Book.id_publisher == publisher.id).all()
+        
+        for title, shop_name, price, date_sale in results:
+            print(f"{title: <40} | {shop_name: <10} | {price: <8} | {date_sale}")
+    else:
+        print('Издатель не найден')
+        
 session.close()
+
+if __name__ == "__main__":
+    name_publisher = input()
+    get_shop(name_publisher)
